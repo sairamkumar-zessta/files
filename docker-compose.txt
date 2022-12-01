@@ -1,0 +1,42 @@
+Dockerizing Django Application With PostgreSQL Database by Compose File:
+1.ComposeFile:
+	1. Compose is a tool for defining and running multi-container Docker applications. 
+	   With Compose, we use a YAML file to configure our application’s services. 
+	   Then, with a single command, we create and start all the services from our configuration.
+	2. In this project I used PostgreSQL for database connections. so we need to define two services 
+	   in our docker-compose file. THe first service is db which is for PostgeSQL image and the second is vernon 
+	   which is django project.
+	3. Create a file named docker-compose.yml
+	4. In compose file The depends_on ensures that the Postgres image is available to our vernon service so it will be automatically created and run.
+	5. Also the properties under Postgres image defined environment variables to be used by PostgreSQL and defined a volume. 
+	   The volume pgdata will be created by docker and all the data stored by our project will be saved here. 
+	   This is recommended because if we delete our containers it also deletes the data in it.
+	6. Defining the volume ensures that even if we delete the containers the data will still be available.
+	7. Next, we create the Django project itself by building the docker-compose file
+
+2. Connecting to the database:	
+	1. To connect to the database, open the Django settings file and edit the database settings by adding the following:
+		DATABASES = {
+    			'default': {
+       				 'ENGINE': 'django.db.backends.postgresql',
+       				 'NAME': 'postgres',
+       				 'USER': 'postgres',
+        			 'HOST': 'db',
+        			 'PORT': 5432,
+   				 }
+			}
+	2. The parameters for the name, user and host must be the same as those on docker-compose file. Specifically, the host parameter is the name of the Postgres service name.
+	
+3. commands to run compose file:
+	With the above procedure we are now done, to start our container run:
+	1. To run containers by compose file enter:
+		- docker-compose up
+		- docker-compose up --build(if any changes in project file after building)
+	2. To connect with the database first we need to perform makemigations and migrate by entering into the project container as:
+		- docker exec -it cont-name bash
+		- python manage.py makemigrations 
+		- python manage.py migrate
+	Now we are redy with all Then visit http://localhost:8000/ 
+	3. To stop and delete containers and volumes enter:
+		- docker-compose down -v
+	

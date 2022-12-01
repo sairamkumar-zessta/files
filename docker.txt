@@ -1,0 +1,52 @@
+Anonmous Volumes:
+.creatingImage:
+-docker build -t feedback-node:volumes .
+.Deleting Image:
+-docker rmi feedback-node:volumes
+.creating container:
+-docker run -d -p 3000:80 --rm --name feedback-app feedback-node:volumes
+.stop Container:
+-docker stop feedback-app
+.docker-volumes-bindmount
+-docker run -d -p 3000:80 --rm --name feedback-app -v feedback-app:/app/feedback -v C:\docker\volumes:/app -v /app/node_modules feedback-app
+
+.docker-networks:
+	. Virtual IP : docker inspect <container name/id> | grep -i IPaddress
+types:(communications)
+	- Sending Http Requests from container (container => WWW)(we can send http req an communicate with other sites without any extra setup)
+	- Request from Cont to HostM/c(some other service running on HostM/c)(localhost => host.docker.internal)
+	- Container to Container (Cross Container Communication)
+docker-network:
+	create:docker network create django-new
+	postgres:docker run --name postgres1 -e POSTGRES_PASSWORD='99891838Aa@' --network django-new postgres
+	cont1:docker run --name django --network django-new -d --rm -p 3000:8000 django:postgres
+	interacting:docker exec -it django bash
+
+postgres:pg:/var/lib/postgresql/data
+docker run --name postgresdb -e POSTGRES_PASSWORD='99891838Aa@' -d --rm --network vernon-net -v postgres:/var/lib/postgresql/data postgres	
+docker run --name vernon -d --rm --network vernon-net -p 3000:8000 -v C:\docker\vernonSchool:/app  vernon:djangon -d --rm --network vernon-net -p 3000:8000 -v C:\8945878ccf4be7docker\vernonSchool:/app  vernon:django
+
+composeFile:
+docker-compose up -d
+docker-compose up -d --build
+docker-compose down
+docker-compose down -v :removes volumes also
+
+
+Aws:
+EC2(Elastic Compute Cloud):
+(TO create and manage our own computer in the cloud)
+EC2 is a service that allows you to create and manage your own remote machines.
+Amazon provides various types of instances with different configurations of CPU, memory, storage and networking resources to suit user needs. Each type is available in various sizes to address specific workload requirements.
+steps:
+1. Create and launch EC2 instance, VPC(virtual public cloud) and security group
+2. Configure security group to expose all required ports to WWW
+3.Connect to instance (SSH(Secure Shell)), install Docker and run container
+
+req:
+1.sudo yum update -y
+2.sudo amazon-linux-extras install docker
+3.sudo service docker start
+4.docker build -t node-deploy-1 .
+5.docker tag node-deploy-1 sairamkumar/node-deploy-1
+6.docker push sairamkumar/node-deploy-1

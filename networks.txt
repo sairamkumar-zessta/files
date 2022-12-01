@@ -1,0 +1,113 @@
+Networks\Container communications
+
+In many application, you'll need more than one container - for two main reasons:
+	1. It's considered a good practice to focus each container on one main task (e.g. run a web
+	   server, run a database, ...)
+	2. It's very hard to configure a Container that does more than one "main thing" (e.g. run a
+	   web server AND a database)
+
+Multi-Container apps are quite common, especially if you're working on "real applications".
+Often, some of these Containers need to communicate though:
+	1. either with each other (Container to container)
+	2. or with the host machine(Container to local)
+	3. or with the world wide web(Container to web)
+
+1. Communicating with the World Wide Web (WWW)-(Container to web)
+	1. Communicating with the WWW is thankfully very easy.
+	2. For sending sending Http request or other kinds of requests to other servers This will work out of the box, no extra configuration is required! The application, running in a
+	   Container, will have no problems sending this requests.
+
+2. Communicating with the Host Machine
+	1. Communicating with the Host Machine (e.g. because you have a database running on the Host
+	    Machine) is also quite simple.
+
+	2. Oneimportant note:
+	    If you deploy a Container onto a server (i.e. another machine), it's very unlikelythat you'll need to communicate with that machine. Communicating to the Host Machine typically is a
+	    requirement during development - for example because you're running some development database on your machine.
+	
+	3. consider this django example:
+	    def admission_report(request):
+    		result = Student.objects.all()
+    		students = {'allstudents':result}
+    		return render(request,'admissions/admission_rep.html',students) 
+	4. This code snippet tries to send a GET request to some web server running on the local host
+	   machine (i.e. outside of the Container but not the WWW)
+
+	5. On your local machine, this would work - inside of a Container, it will fail. Because localhost
+	   inside of the Container refers to the Container environment, not to your local host machine
+	   which is running the Container / Docker!
+
+	6. But Docker has got you covered!
+	   you just need to change the database settings in settings.py file
+		
+		DATABASES = {
+    			'default': {
+       			 'ENGINE': 'django.db.backends.postgresql',
+        		 'NAME':'postgres',
+        		 'USER':'postgres',
+        		 'PASSWORD':'99891838Aa@',
+        		 'HOST': 'host.docker.internal',
+                         'PORT': '5432',
+                      	}
+                     }
+	7. host.docker.internal is a special address / identifier which is translated to the IP address of
+	   the machine hosting the Container by Docker.
+
+	Important: "Translated" does not mean that Docker goes ahead and changes the source code. Instead,
+	it simply detects the outgoing request and is able to resolve the IP address for that request.
+	
+
+3.Communicating with Other Containers
+
+	1. Communicating with other Containers is also quite straightforward. You have two main options:
+	  	1. Manually find out the IP of the other Container (it may change though)
+	  	2. Use Docker Networks and put the communicating Containers into the same Network
+	
+	2. Option 1 is not great since you need to search for the IP on your own and it might change over
+	   time.
+
+	3. Option 2 is perfect though. With Docker, you can create Networks via 
+		(docker network create SOME_NAME):ex:docker network create django-net
+	   and you can then attach multiple Containers to one and the same Network.
+	
+	4. Like this:
+		postgres:docker run --name postgres1 -e POSTGRES_PASSWORD='99891838Aa@' --network django-net postgres
+		django-cont:docker run --name django --network django-net -d --rm -p 3000:8000 django:postgres
+	
+	
+	5. Now, you can simply use the Container names to let them communicate with each other - again,
+	   Docker will resolve the IP for you (see above)
+
+	6. Before creating django container and image make this changes in settings.py File
+			
+			DATABASES = {
+    			'default': {
+       			 'ENGINE': 'django.db.backends.postgresql',
+        		 'NAME':'postgres',
+        		 'USER':'postgres',
+        		 'PASSWORD':'99891838Aa@',
+        		 'HOST': 'postgres1',   // postgres container name
+                         'PORT': '5432',
+                      	}
+                     }
+	
+	7. Apply makemigrations and migrate by entering into the container by exec command like
+		1.interacting:docker exec -it django bash
+		2.python manage.py makemigrations
+		3.python manage.py migrate 
+	8. Now postgres and django containers are connecting in the same network.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
