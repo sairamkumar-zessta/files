@@ -1,0 +1,4 @@
+Docker:
+- Docker is an open-source tool that manages the development,testing and deployment of  		 		containerized applications.
+- It offers hardware virtualization at the OS level and is suitable for modern architecture. This allows developers to package and ship software and its dependencies in order to distribute it as containers.
+-
